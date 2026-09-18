@@ -251,6 +251,41 @@ export async function saveRecord(kind: string, input: unknown) {
   fail(result.error);
   refresh();
 }
+export async function createDressVariants(input: unknown) {
+  const p = z
+    .object({
+      category_id: uuid,
+      code: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z0-9_-]{1,55}$/),
+      name: text,
+      color: optional,
+      default_price: amount,
+      notes: optional,
+      visible: z.boolean(),
+      image_path: z.string().nullable().optional(),
+      variants: z
+        .array(
+          z.object({
+            size: z.string().trim().min(1).max(100),
+            quantity: z.coerce.number().int().min(1).max(50),
+          }),
+        )
+        .min(1)
+        .max(50),
+    })
+    .parse(input);
+  const { db, tenantId } = await shopSession();
+  if (p.image_path && !p.image_path.startsWith(tenantId + "/"))
+    throw Error("صورة غير صالحة.");
+  const { data, error } = await db.rpc("create_dress_variants", { p });
+  if (error?.code === "PGRST202")
+    throw Error("يلزم تطبيق ملف تحديث المخزون رقم 006 في Supabase أولاً.");
+  fail(error);
+  refresh();
+  return data;
+}
 export async function deleteRecord(kind: string, id: string) {
   if (!["categories", "dresses", "customers"].includes(kind))
     throw Error("طلب غير صالح.");

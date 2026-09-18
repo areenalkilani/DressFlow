@@ -30,7 +30,7 @@ async function main() {
             contents:
               args.path === "navigation"
                 ? "export function useRouter(){return {refresh(){}}}"
-                : `const unavailable=async()=>{throw Error('Test harness: server actions require Supabase.');}; ${["login", "logout", "previewBooking", "saveBooking", "payment", "transition", "cancelBooking", "fitting", "readNotice", "saveRecord", "deleteRecord", "saveOffer", "uploadImage", "saveSettings", "changePassword", "changeEmail", "saveShop"].map((n) => `export const ${n}=unavailable;`).join("\n")}`,
+                : `const unavailable=async()=>{throw Error('Test harness: server actions require Supabase.');}; ${["login", "logout", "previewBooking", "saveBooking", "payment", "transition", "cancelBooking", "fitting", "readNotice", "saveRecord", "createDressVariants", "deleteRecord", "saveOffer", "uploadImage", "saveSettings", "changePassword", "changeEmail", "saveShop"].map((n) => `export const ${n}=unavailable;`).join("\n")}`,
             loader: "js",
           }));
         },
@@ -207,21 +207,11 @@ async function main() {
     console.log(
       "PASS: workspace navigation, empty states, booking dialog keyboard close and save guard",
     );
-    await page
-      .getByLabel(/هاتف التواصل/)
-      .fill("+972599555555");
+    await page.getByLabel(/هاتف التواصل/).fill("+972599555555");
     await page.getByText("shop@example.com", { exact: true }).waitFor();
     await page
       .getByLabel("البريد الجديد", { exact: true })
       .fill("new@example.com");
-    await page
-      .getByRole("button", { name: "تثبيت التطبيق", exact: true })
-      .click();
-    await page
-      .getByRole("dialog")
-      .getByText(/Safari/)
-      .waitFor();
-    await page.keyboard.press("Escape");
     await page.goto(harnessUrl + "/#page=dashboard");
     await page.getByRole("heading", { name: /أهلاً أرين/ }).waitFor();
     assert.equal(
@@ -326,6 +316,14 @@ async function main() {
       fullPage: true,
     });
     await page.goto(`http://localhost:${port}/login`);
+    await page
+      .getByRole("button", { name: "تثبيت التطبيق", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByText(/Safari/)
+      .waitFor();
+    await page.keyboard.press("Escape");
     assert.equal(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,

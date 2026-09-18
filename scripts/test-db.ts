@@ -98,6 +98,56 @@ grant usage on schema storage to authenticated; grant select,insert,update,delet
       "self-service settings are tenant-scoped, validate phone and roll back duplicate phones",
     );
     const cat = (await scalar("select id from categories limit 1")) as string;
+    const variantsCreated = await scalar(
+      "select create_dress_variants($1::jsonb)",
+      [
+        JSON.stringify({
+          category_id: cat,
+          code: "BRIDE",
+          name: "فستان تجريبي",
+          color: "أبيض",
+          default_price: 900,
+          visible: true,
+          variants: [
+            { size: "S", quantity: 2 },
+            { size: "M", quantity: 3 },
+          ],
+        }),
+      ],
+    );
+    assert.equal(variantsCreated, 5);
+    assert.deepEqual(
+      (
+        await sql(
+          "select code,size from dresses where name='فستان تجريبي' order by code",
+        )
+      ).rows.map((r: any) => [r.code, r.size]),
+      [
+        ["BRIDE-1", "S"],
+        ["BRIDE-2", "S"],
+        ["BRIDE-3", "M"],
+        ["BRIDE-4", "M"],
+        ["BRIDE-5", "M"],
+      ],
+    );
+    await asUser(u2);
+    await rejects(
+      () =>
+        sql("select create_dress_variants($1::jsonb)", [
+          JSON.stringify({
+            category_id: cat,
+            code: "ATTACK",
+            name: "x",
+            default_price: 1,
+            variants: [{ size: "M", quantity: 1 }],
+          }),
+        ]),
+      /INVALID_CATEGORY/,
+    );
+    await asUser(u1);
+    check(
+      "one dress form creates independently bookable size and quantity variants",
+    );
     const ids = [randomUUID(), randomUUID(), randomUUID(), randomUUID()];
     for (let i = 0; i < ids.length; i++)
       await sql(

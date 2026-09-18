@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/login-form";
+import { InstallApp } from "@/components/install-app";
 import { configured } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 export default function Login() {
@@ -31,6 +32,9 @@ export default function Login() {
           <h2>أهلاً بعودتك</h2>
           <p className="muted">سجّل الدخول لمتابعة حجوزاتك ويوم عملك.</p>
           <LoginForm configured={configured()} />
+          <div className="login-install">
+            <InstallApp />
+          </div>
           <p className="login-help">
             للحصول على حساب أو استعادة الوصول، تواصل مع مدير النظام.
           </p>

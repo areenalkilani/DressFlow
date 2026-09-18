@@ -2,11 +2,13 @@
 import { PriceInput } from "./price-input";
 import { EmailForm } from "./email-form";
 import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import {
   saveRecord,
   uploadImage,
   saveSettings,
   changePassword,
+  createDressVariants,
 } from "@/app/actions";
 import type { ShopData, Category, Dress, Customer } from "@/lib/types";
 type RecordKind = "categories" | "dresses" | "customers";
@@ -23,6 +25,7 @@ export function RecordForm({
 }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [variants, setVariants] = useState([{ size: "", quantity: 1 }]);
   const r = (record || {}) as Partial<Dress & Customer>;
   return (
     <form
@@ -65,7 +68,9 @@ export function RecordForm({
                     town: fd.get("address"),
                     notes: fd.get("notes"),
                   };
-          await saveRecord(kind, payload);
+          if (kind === "dresses" && !r.id) {
+            await createDressVariants({ ...payload, variants });
+          } else await saveRecord(kind, payload);
           onSaved();
         } catch (e) {
           setError(
@@ -110,10 +115,83 @@ export function RecordForm({
               اللون
               <input name="color" defaultValue={r.color} />
             </label>
-            <label>
-              المقاس
-              <input name="size" defaultValue={r.size} />
-            </label>
+            {r.id ? (
+              <label>
+                المقاس
+                <input name="size" defaultValue={r.size} />
+              </label>
+            ) : (
+              <div className="variant-editor">
+                <div>
+                  <b>المقاسات والكميات</b>
+                  <small>
+                    كل قطعة تُحفظ بشكل مستقل حتى تنحجز وتُرجع لوحدها.
+                  </small>
+                </div>
+                {variants.map((variant, index) => (
+                  <div className="variant-row" key={index}>
+                    <label>
+                      المقاس
+                      <input
+                        required
+                        value={variant.size}
+                        onChange={(e) =>
+                          setVariants((v) =>
+                            v.map((x, i) =>
+                              i === index ? { ...x, size: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        placeholder="مثال: M"
+                      />
+                    </label>
+                    <label>
+                      الكمية
+                      <input
+                        required
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={variant.quantity}
+                        onChange={(e) =>
+                          setVariants((v) =>
+                            v.map((x, i) =>
+                              i === index
+                                ? {
+                                    ...x,
+                                    quantity: Number(e.target.value) || 1,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                    {variants.length > 1 && (
+                      <button
+                        type="button"
+                        className="icon-button"
+                        aria-label="حذف المقاس"
+                        onClick={() =>
+                          setVariants((v) => v.filter((_, i) => i !== index))
+                        }
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() =>
+                    setVariants((v) => [...v, { size: "", quantity: 1 }])
+                  }
+                >
+                  <Plus size={16} /> إضافة نمرة أخرى
+                </button>
+              </div>
+            )}
             <label>
               سعر التأجير الافتراضي
               <PriceInput

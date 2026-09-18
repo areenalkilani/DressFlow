@@ -56,7 +56,6 @@ import { BookingDetail } from "./booking-detail";
 import { AvailabilityView } from "./availability";
 import { FittingsView } from "./fittings-view";
 import { DressHistory } from "./dress-history";
-import { InstallApp } from "./install-app";
 type Page =
   | "home"
   | "dresses"
@@ -275,7 +274,6 @@ export function ShopApp({ data }: { data: ShopData }) {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <InstallApp />
           <button
             onClick={() => go("settings")}
             className={page === "settings" ? "active" : ""}
