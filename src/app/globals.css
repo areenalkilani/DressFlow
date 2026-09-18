@@ -280,6 +280,13 @@ label small {
   display: flex;
   flex-direction: column;
   z-index: 30;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+.sidebar > * {
+  flex-shrink: 0;
 }
 .sidebar .wordmark {
   justify-content: center;
