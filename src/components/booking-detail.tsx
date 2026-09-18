@@ -2,7 +2,7 @@
 import { PriceInput } from "./price-input";
 import { useState } from "react";
 import { payment, fitting, transition, cancelBooking } from "@/app/actions";
-import { money, balance, itemStatus, nextStatuses, labels } from "@/lib/domain";
+import { money, balance, itemStatus, labels } from "@/lib/domain";
 import type { Booking, ShopData } from "@/lib/types";
 import { Badge, Modal } from "./ui";
 export function BookingDetail({
@@ -140,17 +140,29 @@ export function BookingDetail({
               <small>
                 {i.offer_name || "دون عرض"} · بعد العرض: {money(i.offer_price)}
               </small>
-              <div className="title-actions">
-                {nextStatuses[i.status]?.map((s) => (
-                  <button
-                    key={s}
-                    disabled={busy}
-                    onClick={() => run(() => transition(i.id, s))}
-                  >
-                    {labels[s]}
-                  </button>
-                ))}
-              </div>
+              <label className="rental-status-select">
+                الحالة
+                <select
+                  aria-label={`حالة ${i.dress_code}`}
+                  value={i.status}
+                  disabled={busy || i.status === "available"}
+                  onChange={(e) => run(() => transition(i.id, e.target.value))}
+                >
+                  {[
+                    "reserved",
+                    "ready_for_delivery",
+                    "delivered",
+                    "awaiting_return",
+                    "returned",
+                    "cleaning",
+                    "available",
+                  ].map((status) => (
+                    <option key={status} value={status}>
+                      {labels[status]}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </article>
         ))}

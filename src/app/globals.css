@@ -1634,17 +1634,73 @@ dd {
   text-align: center;
 }
 .loading-screen {
-  max-width: 900px;
-  margin: 80px auto;
-  padding: 25px;
+  min-height: 100vh;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 15px;
+  text-align: center;
+  background: #f8f7f9;
+  color: var(--ink);
 }
+.loading-screen h1 {
+  margin: 2px 0 0;
+  font-size: 24px;
+}
+.loading-screen p {
+  margin: 0;
+  color: var(--muted);
+}
+.loading-mark {
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  color: white;
+  background: var(--accent);
+  font:
+    700 24px Georgia,
+    serif;
+}
+.loading-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #e5d7de;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: loading-spin 0.7s linear infinite;
+}
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rental-status-select {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.rental-status-select select {
+  min-width: 150px;
+}
+@media (max-width: 600px) {
+  .rental-status-select select {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+}
+/* Kept for older cached layouts until the next deployment updates their markup. */
 .skeleton {
   height: 100px;
   border-radius: 14px;
-  margin: 20px 0;
-  background: linear-gradient(90deg, #eee9ed, #faf8fa, #eee9ed);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  background: #eee9ed;
 }
 @keyframes shimmer {
   to {

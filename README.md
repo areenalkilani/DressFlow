@@ -37,8 +37,9 @@ In Supabase's SQL Editor, run each file in `supabase/migrations` in filename ord
 4. `202609170004_integrity.sql`
 5. `202609180005_self_service_settings.sql`
 6. `202609180006_dress_variants.sql`
+7. `202609180007_direct_rental_status.sql`
 
-For an existing project with migrations 001–005 already applied, run only 006. It enables adding several sizes and quantities as independently reservable inventory pieces. See [account settings and installation](docs/ACCOUNT-AND-INSTALL.md) for email confirmation and PWA setup.
+For an existing project with migrations 001–006 already applied, run only 007. It enables selecting a rental item's operational state directly. See [account settings and installation](docs/ACCOUNT-AND-INSTALL.md) for email confirmation and PWA setup.
 
 Alternatively, use the Supabase CLI: initialize/link this repository to your project, then run `supabase db push`. The SQL Editor route requires no local Docker installation. The migrations create all tables, functions, indexes, defaults, RLS policies, and the private `rental-images` storage bucket. Do not seed operational data manually.
 

@@ -440,9 +440,6 @@ grant usage on schema storage to authenticated; grant select,insert,update,delet
         [b3],
       )
     ).rows as { id: string }[];
-    await sql("select transition_item($1,'ready_for_delivery')", [
-      b3items[0].id,
-    ]);
     await sql("select transition_item($1,'delivered')", [b3items[0].id]);
     await rejects(
       () =>
@@ -467,10 +464,6 @@ grant usage on schema storage to authenticated; grant select,insert,update,delet
         [b3items[0].id],
       ),
     );
-    check(
-      "returning one item leaves other two unchanged and records actual date",
-    );
-    await sql("select transition_item($1,'cleaning')", [b3items[0].id]);
     await sql("select transition_item($1,'available')", [b3items[0].id]);
     assert.equal(
       await scalar("select active from booking_items where id=$1", [
@@ -478,7 +471,9 @@ grant usage on schema storage to authenticated; grant select,insert,update,delet
       ]),
       false,
     );
-    check("cleaning completion releases item");
+    check(
+      "direct item states preserve custody and release only the selected returned item",
+    );
     assert.equal(await scalar("select count(*)::integer from customers"), 1);
     check("repeat customer is reused across bookings");
     await asUser(u2);

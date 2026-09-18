@@ -61,16 +61,30 @@ export async function loadShop(): Promise<ShopData> {
   const tenant = tenantResult.data as ShopData["tenant"];
   tenant.email = user.email;
   const settings = settingsResult.data as ShopData["settings"];
+  const byBooking = <T extends { booking_id: string }>(rows: T[]) => {
+    const groups = new Map<string, T[]>();
+    for (const row of rows)
+      groups.set(row.booking_id, [...(groups.get(row.booking_id) || []), row]);
+    return groups;
+  };
+  const itemsByBooking = byBooking(items);
+  const paymentsByBooking = byBooking(payments);
+  const targetsByOffer = new Map<string, typeof targets>();
+  for (const target of targets)
+    targetsByOffer.set(target.offer_id, [
+      ...(targetsByOffer.get(target.offer_id) || []),
+      target,
+    ]);
   const bookings = bookingRows
     .map((b) => ({
       ...b,
-      booking_items: items.filter((i) => i.booking_id === b.id),
-      payments: payments.filter((p) => p.booking_id === b.id),
+      booking_items: itemsByBooking.get(b.id) || [],
+      payments: paymentsByBooking.get(b.id) || [],
     }))
     .sort((a, b) => b.number - a.number);
   const offers = offerRows.map((o) => ({
     ...o,
-    offer_targets: targets.filter((t) => t.offer_id === o.id),
+    offer_targets: targetsByOffer.get(o.id) || [],
   }));
   const paths = [...categories, ...dresses]
     .map((r) => r.image_path)
