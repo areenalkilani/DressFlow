@@ -14,9 +14,10 @@ import type {
 import { SearchBox } from "./ui";
 const cleanPhone = (value: string) => {
   let result = value.replace(/[^\d+]/g, "");
-  if (result.startsWith("00972")) result = `+${result.slice(2)}`;
-  if (/^9725\d{8}$/.test(result)) result = `+${result}`;
-  if (/^05\d{8}$/.test(result)) result = `+972${result.slice(1)}`;
+  if (/^00(?:970|972)5\d{8}$/.test(result)) result = `+${result.slice(2)}`;
+  if (/^(?:970|972)5\d{8}$/.test(result)) result = `+${result}`;
+  if (/^0?5\d{8}$/.test(result))
+    result = `${/^0?(?:56|59)/.test(result) ? "+970" : "+972"}${result.replace(/^0/, "")}`;
   return result;
 };
 export function BookingForm({
@@ -204,8 +205,7 @@ export function BookingForm({
               رقم الهاتف الأساسي
               <input
                 required
-                pattern="(?:05[0-9]{8}|\\+(?:970|972)5[0-9]{8})"
-                placeholder="0591234567"
+                placeholder="0591234567 أو 591234567"
                 inputMode="tel"
                 dir="ltr"
                 type="tel"
@@ -219,7 +219,6 @@ export function BookingForm({
               <input
                 dir="ltr"
                 type="tel"
-                pattern="(?:05[0-9]{8}|\\+(?:970|972)5[0-9]{8})"
                 placeholder="اختياري"
                 inputMode="tel"
                 value={secondary}

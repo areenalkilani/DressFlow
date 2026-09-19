@@ -13,9 +13,10 @@ const amount = z.coerce.number().min(0).max(99999999);
 const phone = z.string().regex(/^\+[1-9]\d{7,14}$/);
 const normalizeBookingPhone = (value: string) => {
   let phone = value.trim().replace(/[^\d+]/g, "");
-  if (phone.startsWith("00972")) phone = `+${phone.slice(2)}`;
-  if (/^9725\d{8}$/.test(phone)) phone = `+${phone}`;
-  if (/^05\d{8}$/.test(phone)) phone = `+972${phone.slice(1)}`;
+  if (/^00(?:970|972)5\d{8}$/.test(phone)) phone = `+${phone.slice(2)}`;
+  if (/^(?:970|972)5\d{8}$/.test(phone)) phone = `+${phone}`;
+  if (/^0?5\d{8}$/.test(phone))
+    phone = `${/^0?(?:56|59)/.test(phone) ? "+970" : "+972"}${phone.replace(/^0/, "")}`;
   return phone;
 };
 const bookingPhone = z
@@ -165,7 +166,7 @@ export async function saveBooking(input: unknown) {
       )
     )
       throw Error(
-        "أدخلي رقم هاتف فلسطيني صحيحاً: 05XXXXXXXX أو ‎+9725XXXXXXXX.",
+        "أدخلي رقم هاتف صحيحاً من 9 أو 10 أرقام، مثل 0591234567 أو 591234567.",
       );
     throw Error("تحققي من بيانات الحجز المطلوبة.");
   }
