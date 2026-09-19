@@ -205,7 +205,7 @@ export function BookingForm({
               رقم الهاتف الأساسي
               <input
                 required
-                placeholder="0591234567 أو 591234567"
+                placeholder="مثال: 0591234567"
                 inputMode="tel"
                 dir="ltr"
                 type="tel"
@@ -213,6 +213,7 @@ export function BookingForm({
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => setPhone(cleanPhone(phone))}
               />
+              <small>يُقبل الرقم المحلي مع أو بدون صفر في البداية.</small>
             </label>
             <label>
               رقم هاتف إضافي
