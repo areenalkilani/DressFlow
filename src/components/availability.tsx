@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { checkAvailability } from "@/app/actions";
 import type { ShopData, Availability } from "@/lib/types";
-import { shiftDate, money } from "@/lib/domain";
+import { money } from "@/lib/domain";
 import { DressDrawing, Empty, Badge } from "./ui";
 export function AvailabilityView({
   data,
@@ -107,10 +107,6 @@ export function AvailabilityView({
           {busy ? "جارٍ الفحص…" : "فحص التوفر"}
         </button>
       </form>
-      <p className="muted">
-        الفترة المحجوزة: {shiftDate(event, -data.settings.days_before_event)}{" "}
-        إلى {shiftDate(event, data.settings.days_after_event)}، شاملة اليومين.
-      </p>
       {error && <p className="alert">{error}</p>}
       {result === null ? (
         <Empty
