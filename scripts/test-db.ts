@@ -210,12 +210,32 @@ grant usage on schema storage to authenticated; grant select,insert,update,delet
     check(
       "editing an agreement preserves an existing fitting date and completion status",
     );
+    const futureBooking = await book(make("2026-10-10", [ids[3]]));
+    const futureItem = await scalar(
+      "select id from booking_items where booking_id=$1",
+      [futureBooking],
+    );
+    await sql("select transition_item($1,'delivered')", [futureItem]);
+    const futureAfterReturn = (await scalar(
+      "select check_availability($1::jsonb,'2026-11-10','','bride')",
+      [JSON.stringify([{ dress_id: ids[3] }])],
+    )) as { conflict: boolean; unready: boolean }[];
+    assert.equal(futureAfterReturn[0].conflict, false);
+    assert.equal(futureAfterReturn[0].unready, false);
+    await rejects(
+      () => book(make("2026-11-10", [ids[0]], { phone: "1234567890" })),
+      /INVALID_PHONE/,
+    );
+    check(
+      "future availability follows the expected return date and rejects incomplete phone numbers",
+    );
     await rejects(() => book(make("2026-10-12")), /DATE_CONFLICT/);
     check("overlapping reservation is rejected server-side");
     await rejects(() => book(make("2026-10-14")), /DATE_CONFLICT/);
     check("inclusive boundary overlap is rejected");
     await book(make("2026-10-15"));
     check("reservation outside blocked period succeeds");
+    await sql("select transition_item($1,'available')", [futureItem]);
     await book(make("2026-10-10", [ids[1]]));
     check("different physical dress can be booked on same date");
     const offer = await scalar("select save_offer($1::jsonb)", [

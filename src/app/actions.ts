@@ -11,6 +11,17 @@ const text = z.string().trim().min(1).max(200);
 const optional = z.string().trim().max(2000).default("");
 const amount = z.coerce.number().min(0).max(99999999);
 const phone = z.string().regex(/^\+[1-9]\d{7,14}$/);
+const normalizeBookingPhone = (value: string) => {
+  let phone = value.trim().replace(/[^\d+]/g, "");
+  if (phone.startsWith("00972")) phone = `+${phone.slice(2)}`;
+  if (/^9725\d{8}$/.test(phone)) phone = `+${phone}`;
+  if (/^05\d{8}$/.test(phone)) phone = `+972${phone.slice(1)}`;
+  return phone;
+};
+const bookingPhone = z
+  .string()
+  .transform(normalizeBookingPhone)
+  .refine((value) => /^\+(?:970|972)5\d{8}$/.test(value));
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const item = z.object({
   dress_id: uuid,
@@ -23,8 +34,11 @@ const item = z.object({
 const bookingSchema = z.object({
   id: uuid.optional(),
   name: text,
-  phone: z.string().trim().min(7).max(30),
-  secondary_phone: optional,
+  phone: bookingPhone,
+  secondary_phone: z
+    .string()
+    .transform((value) => (value.trim() ? normalizeBookingPhone(value) : ""))
+    .refine((value) => !value || /^\+(?:970|972)5\d{8}$/.test(value)),
   city: optional,
   town: optional,
   customer_type: z.enum(["bride", "companion"]),
@@ -121,8 +135,41 @@ export async function previewBooking(
   results.forEach((r) => fail(r.error));
   return { quote: results[0].data, availability: results[1].data };
 }
+export async function checkAvailability(
+  items: RentalInput[],
+  event: string,
+  town = "",
+  type = "bride",
+  id?: string,
+): Promise<Availability[]> {
+  const { db } = await shopSession();
+  const valid = z.array(item).min(1).max(50).parse(items);
+  date.parse(event);
+  if (id) uuid.parse(id);
+  const { data, error } = await db.rpc("check_availability", {
+    p_items: valid,
+    p_event: event,
+    p_town: town,
+    p_type: type,
+    p_booking: id ?? null,
+  });
+  fail(error);
+  return data as Availability[];
+}
 export async function saveBooking(input: unknown) {
-  const p = bookingSchema.parse(input);
+  const parsed = bookingSchema.safeParse(input);
+  if (!parsed.success) {
+    if (
+      parsed.error.issues.some((issue) =>
+        ["phone", "secondary_phone"].includes(String(issue.path[0])),
+      )
+    )
+      throw Error(
+        "أدخلي رقم هاتف فلسطيني صحيحاً: 05XXXXXXXX أو ‎+9725XXXXXXXX.",
+      );
+    throw Error("تحققي من بيانات الحجز المطلوبة.");
+  }
+  const p = parsed.data;
   const { db } = await shopSession();
   const { data, error } = await db.rpc("save_booking", { p });
   fail(error);
@@ -328,8 +375,8 @@ export async function uploadImage(form: FormData) {
   const folder = z
     .enum(["dresses", "categories", "logo"])
     .parse(form.get("folder"));
-  if (!(file instanceof File) || file.size > 5 * 1024 * 1024 || !file.size)
-    throw Error("حجم الصورة يجب ألا يتجاوز ٥ ميغابايت.");
+  if (!(file instanceof File) || file.size > 2 * 1024 * 1024 || !file.size)
+    throw Error("حجم الصورة بعد الضغط يجب ألا يتجاوز ٢ ميغابايت.");
   const bytes = new Uint8Array(await file.arrayBuffer());
   let ext = "";
   if (bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) ext = "jpg";

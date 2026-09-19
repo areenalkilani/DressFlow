@@ -12,6 +12,13 @@ import type {
   Availability,
 } from "@/lib/types";
 import { SearchBox } from "./ui";
+const cleanPhone = (value: string) => {
+  let result = value.replace(/[^\d+]/g, "");
+  if (result.startsWith("00972")) result = `+${result.slice(2)}`;
+  if (/^9725\d{8}$/.test(result)) result = `+${result}`;
+  if (/^05\d{8}$/.test(result)) result = `+972${result.slice(1)}`;
+  return result;
+};
 export function BookingForm({
   data,
   existing,
@@ -197,11 +204,14 @@ export function BookingForm({
               رقم الهاتف الأساسي
               <input
                 required
-                minLength={7}
+                pattern="(?:05[0-9]{8}|\\+(?:970|972)5[0-9]{8})"
+                placeholder="0591234567"
+                inputMode="tel"
                 dir="ltr"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => setPhone(cleanPhone(phone))}
               />
             </label>
             <label>
@@ -209,8 +219,14 @@ export function BookingForm({
               <input
                 dir="ltr"
                 type="tel"
+                pattern="(?:05[0-9]{8}|\\+(?:970|972)5[0-9]{8})"
+                placeholder="اختياري"
+                inputMode="tel"
                 value={secondary}
                 onChange={(e) => setSecondary(e.target.value)}
+                onBlur={() =>
+                  setSecondary(secondary ? cleanPhone(secondary) : "")
+                }
               />
             </label>
             <label>

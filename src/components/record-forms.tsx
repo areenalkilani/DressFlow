@@ -3,6 +3,7 @@ import { PriceInput } from "./price-input";
 import { EmailForm } from "./email-form";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { compressImage } from "@/lib/image-client";
 import {
   saveRecord,
   uploadImage,
@@ -39,7 +40,7 @@ export function RecordForm({
           const file = fd.get("image");
           if (file instanceof File && file.size) {
             const upload = new FormData();
-            upload.set("file", file);
+            upload.set("file", await compressImage(file));
             upload.set("folder", kind);
             imagePath = await uploadImage(upload);
           }
@@ -264,7 +265,10 @@ export function RecordForm({
                 name="image"
                 accept="image/png,image/jpeg,image/webp"
               />
-              <small>حتى ٥ ميغابايت</small>
+              <small>
+                تُضغط تلقائياً قبل الحفظ لتقليل المساحة؛ الحد النهائي ٢
+                ميغابايت.
+              </small>
             </label>
             <label className="checkbox">
               <input
@@ -317,7 +321,7 @@ export function SettingsForm({
             const file = fd.get("logo");
             if (file instanceof File && file.size) {
               const upload = new FormData();
-              upload.set("file", file);
+              upload.set("file", await compressImage(file));
               upload.set("folder", "logo");
               logo = await uploadImage(upload);
             }

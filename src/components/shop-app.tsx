@@ -247,7 +247,11 @@ export function ShopApp({ data }: { data: ShopData }) {
         <p className="sidebar-caption">كل التفاصيل، في مكان واحد</p>
         <div className="shop-chip">
           {data.tenant.logo_url ? (
-            <img src={data.tenant.logo_url} alt="شعار المتجر" />
+            <img
+              src={data.tenant.logo_url}
+              alt="شعار المتجر"
+              decoding="async"
+            />
           ) : (
             <span>✦</span>
           )}
@@ -749,7 +753,12 @@ export function ShopApp({ data }: { data: ShopData }) {
                       <article className="dress-card" key={d.id}>
                         <div className="dress-image">
                           {d.image_url ? (
-                            <img src={d.image_url} alt={d.name} />
+                            <img
+                              src={d.image_url}
+                              alt={d.name}
+                              loading="lazy"
+                              decoding="async"
+                            />
                           ) : (
                             <DressDrawing />
                           )}
@@ -839,7 +848,12 @@ export function ShopApp({ data }: { data: ShopData }) {
                 {data.categories.map((c) => (
                   <article className="panel category-card" key={c.id}>
                     {c.image_url ? (
-                      <img src={c.image_url} alt={c.name} />
+                      <img
+                        src={c.image_url}
+                        alt={c.name}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
                       <Shirt size={35} />
                     )}

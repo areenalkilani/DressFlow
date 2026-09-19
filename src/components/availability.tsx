@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { previewBooking } from "@/app/actions";
+import { checkAvailability } from "@/app/actions";
 import type { ShopData, Availability } from "@/lib/types";
 import { shiftDate, money } from "@/lib/domain";
 import { DressDrawing, Empty, Badge } from "./ui";
@@ -43,7 +43,7 @@ export function AvailabilityView({
               batches.push(dresses.slice(i, i + 50));
             const values = await Promise.all(
               batches.map((batch) =>
-                previewBooking(
+                checkAvailability(
                   batch.map((d) => ({ dress_id: d.id })),
                   event,
                   town,
@@ -51,7 +51,9 @@ export function AvailabilityView({
                 ),
               ),
             );
-            setResult(values.flatMap((v) => v.availability));
+            setResult(
+              values.flat().filter((item) => !item.conflict && !item.unready),
+            );
           } catch (e) {
             setError(
               e instanceof Error && /[\u0600-\u06FF]/.test(e.message)
@@ -125,19 +127,16 @@ export function AvailabilityView({
               <article className="dress-card" key={d.id}>
                 <div className="dress-image">
                   {d.image_url ? (
-                    <img src={d.image_url} alt={d.name} />
+                    <img
+                      src={d.image_url}
+                      alt={d.name}
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <DressDrawing />
                   )}
-                  <Badge
-                    status={
-                      a.unready
-                        ? "out_of_service"
-                        : a.conflict
-                          ? "reserved"
-                          : "available"
-                    }
-                  />
+                  <Badge status="available" />
                 </div>
                 <div className="dress-body">
                   <small>
@@ -151,16 +150,8 @@ export function AvailabilityView({
                       الحجز.
                     </p>
                   )}
-                  <button
-                    className="full"
-                    disabled={a.conflict || a.unready}
-                    onClick={() => onBook(d.id, event)}
-                  >
-                    {a.unready
-                      ? "غير جاهزة"
-                      : a.conflict
-                        ? "محجوزة في هذه الفترة"
-                        : "إنشاء حجز بهذه البدلة"}
+                  <button className="full" onClick={() => onBook(d.id, event)}>
+                    إنشاء حجز بهذه البدلة
                   </button>
                 </div>
               </article>
