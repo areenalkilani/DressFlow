@@ -451,7 +451,7 @@ export async function changePassword(input: unknown) {
 }
 export async function changeEmail(
   input: unknown,
-): Promise<{ error?: string; message?: string }> {
+): Promise<{ error?: string; message?: string; pending?: boolean }> {
   const parsed = z
     .object({
       email: z.string().trim().email().toLowerCase(),
@@ -486,7 +486,33 @@ export async function changeEmail(
       data.user.email === parsed.data.email
         ? "تم تحديث البريد الإلكتروني."
         : "تم طلب تغيير البريد. افتحي رسائل التأكيد في البريد الحالي والجديد لإكماله؛ يبقى بريد الدخول الحالي فعالاً حتى التأكيد.",
+    pending: data.user.email !== parsed.data.email,
   };
+}
+export async function resendEmailChange(
+  input: unknown,
+): Promise<{ error?: string; message?: string }> {
+  const parsed = z
+    .object({ email: z.string().trim().email().toLowerCase() })
+    .safeParse(input);
+  if (!parsed.success) return { error: "أدخلي البريد الجديد أولاً." };
+  const { db, user } = await shopSession();
+  if (parsed.data.email === user.email)
+    return { error: "هذا هو بريد الدخول الحالي." };
+  const origin = (await headers()).get("origin");
+  if (!origin)
+    return { error: "تعذر تحديد رابط التطبيق. حدّثي الصفحة وأعيدي المحاولة." };
+  const { error } = await db.auth.resend({
+    type: "email_change",
+    email: parsed.data.email,
+    options: { emailRedirectTo: `${new URL(origin).origin}/auth/callback` },
+  });
+  if (error)
+    return {
+      error:
+        "تعذر إعادة الإرسال الآن. انتظري قليلاً وتحققي من إعدادات البريد في Supabase.",
+    };
+  return { message: "أُعيد إرسال رسالة التأكيد إلى البريد الجديد." };
 }
 export async function saveShop(input: unknown) {
   const p = z

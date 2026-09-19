@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { changeEmail } from "@/app/actions";
+import { changeEmail, resendEmailChange } from "@/app/actions";
 export function EmailForm({
   email,
   notify,
@@ -11,6 +11,7 @@ export function EmailForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
   return (
     <form
       className="panel"
@@ -30,6 +31,13 @@ export function EmailForm({
           else {
             setMessage(result.message || "");
             notify(result.message || "تم إرسال الطلب.");
+            setPendingEmail(
+              result.pending
+                ? String(fd.get("email") || "")
+                    .trim()
+                    .toLowerCase()
+                : "",
+            );
             form.reset();
           }
         } catch {
@@ -79,6 +87,31 @@ export function EmailForm({
       <button disabled={busy}>
         {busy ? "جارٍ الإرسال…" : "طلب تغيير البريد"}
       </button>
+      {pendingEmail && (
+        <button
+          type="button"
+          className="text-button"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setError("");
+            try {
+              const result = await resendEmailChange({ email: pendingEmail });
+              if (result.error) setError(result.error);
+              else {
+                setMessage(result.message || "");
+                notify(result.message || "تمت إعادة الإرسال.");
+              }
+            } catch {
+              setError("تعذر إعادة الإرسال الآن. حاولي لاحقاً.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          إعادة إرسال رسالة التأكيد إلى {pendingEmail}
+        </button>
+      )}
     </form>
   );
 }

@@ -30,7 +30,7 @@ async function main() {
             contents:
               args.path === "navigation"
                 ? "export function useRouter(){return {refresh(){}}}"
-                : `const unavailable=async()=>{throw Error('Test harness: server actions require Supabase.');}; ${["login", "logout", "previewBooking", "checkAvailability", "saveBooking", "payment", "transition", "cancelBooking", "fitting", "readNotice", "saveRecord", "createDressVariants", "deleteRecord", "saveOffer", "uploadImage", "saveSettings", "changePassword", "changeEmail", "saveShop"].map((n) => `export const ${n}=unavailable;`).join("\n")}`,
+                : `const unavailable=async()=>{throw Error('Test harness: server actions require Supabase.');}; ${["login", "logout", "previewBooking", "checkAvailability", "saveBooking", "payment", "transition", "cancelBooking", "fitting", "readNotice", "saveRecord", "createDressVariants", "deleteRecord", "saveOffer", "uploadImage", "saveSettings", "changePassword", "changeEmail", "resendEmailChange", "saveShop"].map((n) => `export const ${n}=unavailable;`).join("\n")}`,
             loader: "js",
           }));
         },
