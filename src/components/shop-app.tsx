@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -49,13 +50,30 @@ import {
   DressDrawing,
   SmallLink,
 } from "./ui";
-import { OfferForm } from "./offer-form";
-import { BookingForm } from "./booking-form";
-import { RecordForm, SettingsForm } from "./record-forms";
-import { BookingDetail } from "./booking-detail";
-import { AvailabilityView } from "./availability";
-import { FittingsView } from "./fittings-view";
-import { DressHistory } from "./dress-history";
+const OfferForm = dynamic(() =>
+  import("./offer-form").then((module) => module.OfferForm),
+);
+const BookingForm = dynamic(() =>
+  import("./booking-form").then((module) => module.BookingForm),
+);
+const RecordForm = dynamic(() =>
+  import("./record-forms").then((module) => module.RecordForm),
+);
+const SettingsForm = dynamic(() =>
+  import("./record-forms").then((module) => module.SettingsForm),
+);
+const BookingDetail = dynamic(() =>
+  import("./booking-detail").then((module) => module.BookingDetail),
+);
+const AvailabilityView = dynamic(() =>
+  import("./availability").then((module) => module.AvailabilityView),
+);
+const FittingsView = dynamic(() =>
+  import("./fittings-view").then((module) => module.FittingsView),
+);
+const DressHistory = dynamic(() =>
+  import("./dress-history").then((module) => module.DressHistory),
+);
 type Page =
   | "home"
   | "dresses"
