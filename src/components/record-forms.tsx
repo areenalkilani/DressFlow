@@ -2,6 +2,7 @@
 import { PriceInput } from "./price-input";
 import { EmailForm } from "./email-form";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { compressImage } from "@/lib/image-client";
 import {
@@ -305,6 +306,7 @@ export function SettingsForm({
   data: ShopData;
   notify: (text: string) => void;
 }) {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return (
@@ -337,6 +339,7 @@ export function SettingsForm({
               notifications_enabled: fd.has("notifications_enabled"),
               timezone: fd.get("timezone"),
             });
+            router.refresh();
             notify("تم حفظ إعدادات المتجر.");
           } catch (e) {
             setError(
